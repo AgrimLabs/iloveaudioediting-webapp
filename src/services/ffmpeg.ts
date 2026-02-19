@@ -18,10 +18,19 @@ export async function loadFFmpeg(): Promise<FFmpeg> {
 
   loadPromise = (async () => {
     const ffmpeg = new FFmpeg()
-    await ffmpeg.load({
-      coreURL: await toBlobURL(`${BASE_URL}/ffmpeg-core.js`, 'text/javascript'),
-      wasmURL: await toBlobURL(`${BASE_URL}/ffmpeg-core.wasm`, 'application/wasm'),
-    })
+    ffmpeg.on('log', ({ message }) => console.log('[FFmpeg]', message))
+    try {
+      console.log('[FFmpeg] Loading (~25MB, first time only)...')
+      await ffmpeg.load({
+        coreURL: await toBlobURL(`${BASE_URL}/ffmpeg-core.js`, 'text/javascript'),
+        wasmURL: await toBlobURL(`${BASE_URL}/ffmpeg-core.wasm`, 'application/wasm'),
+      })
+      console.log('[FFmpeg] Loaded successfully')
+    } catch (err) {
+      console.error('[FFmpeg] Load failed:', err)
+      loadPromise = null
+      throw err
+    }
     ffmpegInstance = ffmpeg
     return ffmpeg
   })()
@@ -56,29 +65,31 @@ export async function trimAudio(
 export async function mergeAudio(files: File[]): Promise<Blob> {
   const ffmpeg = await loadFFmpeg()
 
-  // Write all files and create concat list
+  // Write all files - use generic names for concat filter
   for (let i = 0; i < files.length; i++) {
     const name = `input_${i}${getExtension(files[i].name)}`
     await ffmpeg.writeFile(name, await fetchFile(files[i]))
   }
-  const listContent = files
-    .map((_, i) => `file 'input_${i}${getExtension(files[i].name)}'`)
-    .join('\n')
-  await ffmpeg.writeFile('concat.txt', new TextEncoder().encode(listContent))
 
-  await ffmpeg.exec([
-    '-f', 'concat',
-    '-safe', '0',
-    '-i', 'concat.txt',
-    '-c', 'copy',
+  // Use concat filter (handles mixed formats) instead of concat demuxer
+  // e.g. [0:a][1:a][2:a]concat=n=3:v=0:a=1[a]
+  const filterInputs = files.map((_, i) => `[${i}:a]`).join('')
+  const filterComplex = `${filterInputs}concat=n=${files.length}:v=0:a=1[a]`
+
+  const args = [
+    ...files.flatMap((_, i) => ['-i', `input_${i}${getExtension(files[i].name)}`]),
+    '-filter_complex', filterComplex,
+    '-map', '[a]',
+    '-codec:a', 'libmp3lame',
+    '-q:a', '2',
     'output.mp3',
-  ])
+  ]
+  await ffmpeg.exec(args)
 
   const data = await ffmpeg.readFile('output.mp3')
   for (let i = 0; i < files.length; i++) {
     await ffmpeg.deleteFile(`input_${i}${getExtension(files[i].name)}`)
   }
-  await ffmpeg.deleteFile('concat.txt')
   await ffmpeg.deleteFile('output.mp3')
 
   return new Blob([data as BlobPart], { type: 'audio/mpeg' })

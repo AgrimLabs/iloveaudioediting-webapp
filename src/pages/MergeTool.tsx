@@ -1,4 +1,5 @@
 import { ToolShell } from '../components/ToolShell'
+import { MergeFileSelector } from '../components/MergeFileSelector'
 import { mergeAudio } from '../services/ffmpeg'
 
 export function MergeTool() {
@@ -17,12 +18,15 @@ export function MergeTool() {
       title="Merge Audio"
       accept="audio/*"
       multiple={true}
+      minFiles={2}
       processFn={processMerge}
-      options={
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Files will be merged in the order they are selected.
-        </p>
-      }
+      customFileInput={({ onFilesSelected, selectedFiles }) => (
+        <MergeFileSelector
+          accept="audio/*"
+          onFilesSelected={onFilesSelected}
+          selectedFiles={selectedFiles}
+        />
+      )}
     />
   )
 }

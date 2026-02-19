@@ -5,6 +5,10 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  optimizeDeps: {
+    // FFmpeg.wasm has worker loading issues with Vite's pre-bundling
+    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util'],
+  },
   plugins: [
     react(),
     tailwindcss(),

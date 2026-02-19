@@ -16,6 +16,13 @@ export interface ToolShellProps {
   processFn: (files: File[]) => Promise<ProcessResult>
   options?: React.ReactNode | ((files: File[]) => React.ReactNode)
   onFilesChange?: (files: File[]) => void
+  /** Custom file input (e.g. separate slots for merge). Replaces default FileDropzone. */
+  customFileInput?: (props: {
+    onFilesSelected: (files: File[]) => void
+    selectedFiles: File[]
+  }) => React.ReactNode
+  /** Minimum files required (default 1). Disables Process button until met. */
+  minFiles?: number
 }
 
 export function ToolShell({
@@ -25,6 +32,8 @@ export function ToolShell({
   processFn,
   options,
   onFilesChange,
+  customFileInput,
+  minFiles = 1,
 }: ToolShellProps) {
   const [files, setFiles] = useState<File[]>([])
 
@@ -36,6 +45,7 @@ export function ToolShell({
     'idle'
   )
   const [progress, setProgress] = useState(0)
+  const [processingSeconds, setProcessingSeconds] = useState(0)
   const [result, setResult] = useState<ProcessResult | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -43,22 +53,33 @@ export function ToolShell({
     if (!files.length) return
     setStatus('processing')
     setProgress(0)
+    setProcessingSeconds(0)
     setError(null)
     setResult(null)
 
+    let progressInterval: ReturnType<typeof setInterval> | null = null
+    let secondsInterval: ReturnType<typeof setInterval> | null = null
     try {
       // Simulate progress for UX (real progress comes from FFmpeg later)
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setProgress((p) => Math.min(p + 10, 90))
       }, 200)
+      secondsInterval = setInterval(() => {
+        setProcessingSeconds((s) => s + 1)
+      }, 1000)
 
       const res = await processFn(files)
-      clearInterval(progressInterval)
+      if (progressInterval) clearInterval(progressInterval)
+      if (secondsInterval) clearInterval(secondsInterval)
       setProgress(100)
       setResult(res)
       setStatus('done')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Processing failed')
+      if (progressInterval) clearInterval(progressInterval)
+      if (secondsInterval) clearInterval(secondsInterval)
+      const message = err instanceof Error ? err.message : String(err)
+      console.error('[iLoveAudio] Processing error:', err)
+      setError(message)
       setStatus('error')
     }
   }
@@ -67,6 +88,7 @@ export function ToolShell({
     setFiles([])
     setStatus('idle')
     setProgress(0)
+    setProcessingSeconds(0)
     setResult(null)
     setError(null)
   }
@@ -88,12 +110,19 @@ export function ToolShell({
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-        <FileDropzone
-          accept={accept}
-          multiple={multiple}
-          onFilesSelected={handleFilesSelected}
-          selectedFiles={files}
-        />
+        {customFileInput ? (
+          customFileInput({
+            onFilesSelected: handleFilesSelected,
+            selectedFiles: files,
+          })
+        ) : (
+          <FileDropzone
+            accept={accept}
+            multiple={multiple}
+            onFilesSelected={handleFilesSelected}
+            selectedFiles={files}
+          />
+        )}
 
         {options && (
           <div>
@@ -104,7 +133,7 @@ export function ToolShell({
         {status === 'idle' && (
           <button
             onClick={handleProcess}
-            disabled={!files.length}
+            disabled={files.length < minFiles}
             className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium"
           >
             Process
@@ -112,7 +141,16 @@ export function ToolShell({
         )}
 
         {status === 'processing' && (
-          <ProgressBar progress={progress} label="Processing..." />
+          <div className="space-y-2">
+            <ProgressBar
+              progress={progress}
+              label={
+                processingSeconds > 5
+                  ? `Processing... (${processingSeconds}s — first run loads FFmpeg ~25MB)`
+                  : 'Processing...'
+              }
+            />
+          </div>
         )}
 
         {status === 'done' && result && (
