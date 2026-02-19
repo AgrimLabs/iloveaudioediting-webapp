@@ -1,0 +1,139 @@
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { FileDropzone } from './FileDropzone'
+import { ProgressBar } from './ProgressBar'
+import { DownloadButton } from './DownloadButton'
+
+export interface ProcessResult {
+  blob: Blob
+  filename: string
+}
+
+export interface ToolShellProps {
+  title: string
+  accept?: string
+  multiple?: boolean
+  processFn: (files: File[]) => Promise<ProcessResult>
+  options?: React.ReactNode
+}
+
+export function ToolShell({
+  title,
+  accept = 'audio/*',
+  multiple = false,
+  processFn,
+  options,
+}: ToolShellProps) {
+  const [files, setFiles] = useState<File[]>([])
+  const [status, setStatus] = useState<'idle' | 'processing' | 'done' | 'error'>(
+    'idle'
+  )
+  const [progress, setProgress] = useState(0)
+  const [result, setResult] = useState<ProcessResult | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleProcess = async () => {
+    if (!files.length) return
+    setStatus('processing')
+    setProgress(0)
+    setError(null)
+    setResult(null)
+
+    try {
+      // Simulate progress for UX (real progress comes from FFmpeg later)
+      const progressInterval = setInterval(() => {
+        setProgress((p) => Math.min(p + 10, 90))
+      }, 200)
+
+      const res = await processFn(files)
+      clearInterval(progressInterval)
+      setProgress(100)
+      setResult(res)
+      setStatus('done')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Processing failed')
+      setStatus('error')
+    }
+  }
+
+  const handleReset = () => {
+    setFiles([])
+    setStatus('idle')
+    setProgress(0)
+    setResult(null)
+    setError(null)
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <header className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
+          <Link
+            to="/"
+            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+          >
+            ← Back
+          </Link>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+            {title}
+          </h1>
+        </div>
+      </header>
+
+      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+        <FileDropzone
+          accept={accept}
+          multiple={multiple}
+          onFilesSelected={setFiles}
+          selectedFiles={files}
+        />
+
+        {options && <div>{options}</div>}
+
+        {status === 'idle' && (
+          <button
+            onClick={handleProcess}
+            disabled={!files.length}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium"
+          >
+            Process
+          </button>
+        )}
+
+        {status === 'processing' && (
+          <ProgressBar progress={progress} label="Processing..." />
+        )}
+
+        {status === 'done' && result && (
+          <div className="space-y-4">
+            <p className="text-green-600 dark:text-green-400 font-medium">
+              Done!
+            </p>
+            <DownloadButton
+              blob={result.blob}
+              filename={result.filename}
+            />
+            <button
+              onClick={handleReset}
+              className="ml-4 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Process another
+            </button>
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="space-y-4">
+            <p className="text-red-600 dark:text-red-400">{error}</p>
+            <button
+              onClick={handleReset}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+      </main>
+    </div>
+  )
+}

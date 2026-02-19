@@ -1,10 +1,21 @@
+import { ToolShell } from '../components/ToolShell'
+
+// Mock processFn - will be replaced with FFmpeg in next commit
+async function processMerge(_files: File[]) {
+  await new Promise((r) => setTimeout(r, 1000))
+  return {
+    blob: new Blob(['merged audio placeholder'], { type: 'audio/mpeg' }),
+    filename: 'merged.mp3',
+  }
+}
+
 export function MergeTool() {
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
-      <h2 className="text-xl font-semibold">Merge Audio</h2>
-      <p className="mt-2 text-gray-600 dark:text-gray-400">
-        Tool coming in next commit.
-      </p>
-    </div>
+    <ToolShell
+      title="Merge Audio"
+      accept="audio/*"
+      multiple={true}
+      processFn={processMerge}
+    />
   )
 }
