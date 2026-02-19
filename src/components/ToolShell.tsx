@@ -14,7 +14,8 @@ export interface ToolShellProps {
   accept?: string
   multiple?: boolean
   processFn: (files: File[]) => Promise<ProcessResult>
-  options?: React.ReactNode
+  options?: React.ReactNode | ((files: File[]) => React.ReactNode)
+  onFilesChange?: (files: File[]) => void
 }
 
 export function ToolShell({
@@ -23,8 +24,14 @@ export function ToolShell({
   multiple = false,
   processFn,
   options,
+  onFilesChange,
 }: ToolShellProps) {
   const [files, setFiles] = useState<File[]>([])
+
+  const handleFilesSelected = (newFiles: File[]) => {
+    setFiles(newFiles)
+    onFilesChange?.(newFiles)
+  }
   const [status, setStatus] = useState<'idle' | 'processing' | 'done' | 'error'>(
     'idle'
   )
@@ -84,11 +91,15 @@ export function ToolShell({
         <FileDropzone
           accept={accept}
           multiple={multiple}
-          onFilesSelected={setFiles}
+          onFilesSelected={handleFilesSelected}
           selectedFiles={files}
         />
 
-        {options && <div>{options}</div>}
+        {options && (
+          <div>
+            {typeof options === 'function' ? options(files) : options}
+          </div>
+        )}
 
         {status === 'idle' && (
           <button
