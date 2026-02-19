@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Header } from './Header'
 import { FileDropzone } from './FileDropzone'
 import { ProgressBar } from './ProgressBar'
 import { DownloadButton } from './DownloadButton'
@@ -24,6 +25,12 @@ export interface ToolShellProps {
   /** Minimum files required (default 1). Disables Process button until met. */
   minFiles?: number
 }
+
+const RELATED_TOOLS = [
+  { label: 'Trim Audio', to: '/trim' },
+  { label: 'Merge Audio', to: '/merge' },
+  { label: 'Convert Audio', to: '/convert' },
+]
 
 export function ToolShell({
   title,
@@ -94,22 +101,12 @@ export function ToolShell({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center gap-4">
-          <Link
-            to="/"
-            className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-          >
-            ← Back
-          </Link>
-          <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-            {title}
-          </h1>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[var(--color-bg-page)] flex flex-col">
+      <Header />
 
-      <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 py-8 space-y-6">
+        <h1 className="text-2xl font-bold text-[var(--color-text)]">{title}</h1>
+
         {customFileInput ? (
           customFileInput({
             onFilesSelected: handleFilesSelected,
@@ -134,7 +131,7 @@ export function ToolShell({
           <button
             onClick={handleProcess}
             disabled={files.length < minFiles}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium"
+            className="px-6 py-3 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
           >
             Process
           </button>
@@ -155,33 +152,50 @@ export function ToolShell({
 
         {status === 'done' && result && (
           <div className="space-y-4">
-            <p className="text-green-600 dark:text-green-400 font-medium">
-              Done!
-            </p>
-            <DownloadButton
-              blob={result.blob}
-              filename={result.filename}
-            />
-            <button
-              onClick={handleReset}
-              className="ml-4 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              Process another
-            </button>
+            <p className="text-green-600 font-medium">Done!</p>
+            <div className="flex flex-wrap gap-3">
+              <DownloadButton
+                blob={result.blob}
+                filename={result.filename}
+              />
+              <button
+                onClick={handleReset}
+                className="px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-card)] text-[var(--color-text)] transition-colors"
+              >
+                Process another
+              </button>
+            </div>
           </div>
         )}
 
         {status === 'error' && (
           <div className="space-y-4">
-            <p className="text-red-600 dark:text-red-400">{error}</p>
+            <p className="text-red-600">{error}</p>
             <button
               onClick={handleReset}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="px-4 py-2 border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-card)] text-[var(--color-text)] transition-colors"
             >
               Try again
             </button>
           </div>
         )}
+
+        <div className="pt-8 mt-8 border-t border-[var(--color-border)]">
+          <p className="text-sm text-[var(--color-text-muted)] mb-3">
+            Related tools
+          </p>
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            {RELATED_TOOLS.map((tool) => (
+              <Link
+                key={tool.to}
+                to={tool.to}
+                className="text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] font-medium"
+              >
+                {tool.label}
+              </Link>
+            ))}
+          </div>
+        </div>
       </main>
     </div>
   )

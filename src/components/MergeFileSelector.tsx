@@ -21,10 +21,10 @@ export function MergeFileSelector({
     [onFilesSelected]
   )
 
-  // Reset when parent clears (e.g. "Process another")
+  // Reset when parent clears (e.g. "Process another") — defer to avoid sync setState in effect
   useEffect(() => {
     if (selectedFiles.length === 0) {
-      setSlots([null, null])
+      queueMicrotask(() => setSlots([null, null]))
     }
   }, [selectedFiles.length])
 
@@ -82,22 +82,22 @@ export function MergeFileSelector({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-600 dark:text-gray-400">
+      <p className="text-sm text-[var(--color-text-muted)]">
         Add files in the order you want them merged. Each file has its own slot.
       </p>
       <div className="space-y-3">
         {displaySlots.map((file, index) => (
           <div
             key={index}
-            className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800"
+            className="flex items-center gap-3 p-3 border border-[var(--color-border)] rounded-xl bg-[var(--color-bg-card)]"
           >
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400 w-16 shrink-0">
+            <span className="text-sm font-medium text-[var(--color-text-muted)] w-16 shrink-0">
               File {index + 1}
             </span>
             <label
               onDrop={(e) => handleDropForSlot(index, e)}
               onDragOver={(e) => e.preventDefault()}
-              className="flex-1 min-w-0 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg px-4 py-3 cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+              className="flex-1 min-w-0 border-2 border-dashed border-[var(--color-border)] rounded-lg px-4 py-3 cursor-pointer hover:border-[var(--color-primary)]/50 transition-colors"
             >
               <input
                 type="file"
@@ -105,7 +105,7 @@ export function MergeFileSelector({
                 onChange={(e) => handleFileForSlot(index, e)}
                 className="hidden"
               />
-              <span className="text-sm text-gray-600 dark:text-gray-400 truncate block">
+              <span className="text-sm text-[var(--color-text-muted)] truncate block">
                 {file ? file.name : 'Drop or click to select'}
               </span>
             </label>
@@ -113,7 +113,7 @@ export function MergeFileSelector({
               type="button"
               onClick={() => removeSlot(index)}
               disabled={displaySlots.length <= 2}
-              className="shrink-0 px-2 py-1 text-sm text-red-600 hover:text-red-700 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="shrink-0 px-2 py-1 text-sm text-[var(--color-primary)] hover:text-[var(--color-primary-hover)] disabled:opacity-40 disabled:cursor-not-allowed"
               title="Remove"
             >
               Remove
@@ -124,7 +124,7 @@ export function MergeFileSelector({
       <button
         type="button"
         onClick={addSlot}
-        className="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+        className="px-4 py-2 text-sm border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg-card)] text-[var(--color-text)] transition-colors"
       >
         + Add another file
       </button>

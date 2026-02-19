@@ -48,10 +48,10 @@ export function FileDropzone({
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        className={`block border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+        className={`block border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
           isDragging
-            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-            : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+            ? 'border-[var(--color-primary)] bg-[#fef2f2]'
+            : 'border-[var(--color-border)] hover:border-[var(--color-primary)]/50 bg-[var(--color-bg-card)]'
         }`}
       >
         <input
@@ -61,14 +61,14 @@ export function FileDropzone({
           onChange={handleFileInput}
           className="hidden"
         />
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-[var(--color-text-muted)]">
           {selectedFiles.length
             ? `${selectedFiles.length} file(s) selected`
             : 'Drop files here or click to browse'}
         </p>
       </label>
       {selectedFiles.length > 0 && (
-        <ul className="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+        <ul className="text-sm text-[var(--color-text-muted)] space-y-1">
           {selectedFiles.map((f, i) => (
             <li key={i}>{f.name}</li>
           ))}

@@ -35,14 +35,14 @@ export function ConvertTool() {
       processFn={processConvert}
       options={
         <div className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-[var(--color-text-muted)]">
             Choose output format:
           </p>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             {FORMATS.map((f) => (
               <label
                 key={f.value}
-                className="flex items-center gap-2 cursor-pointer"
+                className="flex items-center gap-2 cursor-pointer text-[var(--color-text)]"
               >
                 <input
                   type="radio"
@@ -50,7 +50,7 @@ export function ConvertTool() {
                   value={f.value}
                   checked={format === f.value}
                   onChange={() => setFormat(f.value)}
-                  className="w-4 h-4"
+                  className="w-4 h-4 accent-[var(--color-primary)]"
                 />
                 <span>{f.label}</span>
               </label>
