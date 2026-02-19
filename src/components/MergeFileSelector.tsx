@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { isAudioFile } from '../utils/audio'
 
 interface MergeFileSelectorProps {
   accept?: string
@@ -63,7 +64,7 @@ export function MergeFileSelector({
   const handleFileForSlot = useCallback(
     (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
-      if (file) setSlot(index, file)
+      if (file && isAudioFile(file)) setSlot(index, file)
       e.target.value = ''
     },
     [setSlot]
@@ -73,7 +74,7 @@ export function MergeFileSelector({
     (index: number, e: React.DragEvent) => {
       e.preventDefault()
       const file = e.dataTransfer.files[0]
-      if (file) setSlot(index, file)
+      if (file && isAudioFile(file)) setSlot(index, file)
     },
     [setSlot]
   )

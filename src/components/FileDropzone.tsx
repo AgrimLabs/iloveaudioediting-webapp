@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { filterAudioFiles } from '../utils/audio'
 
 interface FileDropzoneProps {
   accept?: string
@@ -19,7 +20,7 @@ export function FileDropzone({
     (e: React.DragEvent) => {
       e.preventDefault()
       setIsDragging(false)
-      const files = Array.from(e.dataTransfer.files)
+      const files = filterAudioFiles(Array.from(e.dataTransfer.files))
       if (files.length) onFilesSelected(multiple ? files : [files[0]])
     },
     [multiple, onFilesSelected]
@@ -36,7 +37,7 @@ export function FileDropzone({
 
   const handleFileInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files ? Array.from(e.target.files) : []
+      const files = e.target.files ? filterAudioFiles(Array.from(e.target.files)) : []
       if (files.length) onFilesSelected(multiple ? files : [files[0]])
     },
     [multiple, onFilesSelected]
