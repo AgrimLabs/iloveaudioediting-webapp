@@ -1,21 +1,28 @@
 import { ToolShell } from '../components/ToolShell'
-
-// Mock processFn - will be replaced with FFmpeg in next commit
-async function processMerge(_files: File[]) {
-  await new Promise((r) => setTimeout(r, 1000))
-  return {
-    blob: new Blob(['merged audio placeholder'], { type: 'audio/mpeg' }),
-    filename: 'merged.mp3',
-  }
-}
+import { mergeAudio } from '../services/ffmpeg'
 
 export function MergeTool() {
+  async function processMerge(files: File[]) {
+    if (files.length < 2) throw new Error('Select at least 2 files to merge')
+
+    const blob = await mergeAudio(files)
+    return {
+      blob,
+      filename: 'merged.mp3',
+    }
+  }
+
   return (
     <ToolShell
       title="Merge Audio"
       accept="audio/*"
       multiple={true}
       processFn={processMerge}
+      options={
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          Files will be merged in the order they are selected.
+        </p>
+      }
     />
   )
 }
