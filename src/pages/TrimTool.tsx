@@ -52,13 +52,13 @@ export function TrimTool() {
       onFilesChange={handleFilesChange}
       options={() => (
         <div className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-[var(--color-text-muted)]">
             Set start and end time in seconds.{' '}
             {duration != null && `(Duration: ${Math.round(duration)}s)`}
           </p>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Start (s)</label>
+              <label className="block text-sm font-medium mb-1 text-[var(--color-text)]">Start (s)</label>
               <input
                 type="number"
                 min={0}
@@ -66,11 +66,11 @@ export function TrimTool() {
                 step={0.1}
                 value={start}
                 onChange={(e) => setStart(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">End (s)</label>
+              <label className="block text-sm font-medium mb-1 text-[var(--color-text)]">End (s)</label>
               <input
                 type="number"
                 min={0}
@@ -78,7 +78,7 @@ export function TrimTool() {
                 step={0.1}
                 value={end}
                 onChange={(e) => setEnd(Number(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800"
+                className="w-full px-3 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent"
               />
             </div>
           </div>

@@ -15,11 +15,11 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'iLoveAudio',
-        short_name: 'iLoveAudio',
+        name: 'iLoveAudioEditing',
+        short_name: 'iLoveAudioEditing',
         description: 'Simple, offline audio tools. No login required.',
-        theme_color: '#2563eb',
-        background_color: '#f9fafb',
+        theme_color: '#e74c3c',
+        background_color: '#f5f5f5',
       },
       workbox: {
         // Cache FFmpeg.wasm from CDN for offline use
