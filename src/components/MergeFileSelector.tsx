@@ -21,10 +21,10 @@ export function MergeFileSelector({
     [onFilesSelected]
   )
 
-  // Reset when parent clears (e.g. "Process another")
+  // Reset when parent clears (e.g. "Process another") — defer to avoid sync setState in effect
   useEffect(() => {
     if (selectedFiles.length === 0) {
-      setSlots([null, null])
+      queueMicrotask(() => setSlots([null, null]))
     }
   }, [selectedFiles.length])
 
