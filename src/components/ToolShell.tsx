@@ -78,7 +78,7 @@ export function ToolShell({
       if (progressInterval) clearInterval(progressInterval)
       if (secondsInterval) clearInterval(secondsInterval)
       const message = err instanceof Error ? err.message : String(err)
-      console.error('[iLoveAudio] Processing error:', err)
+      if (import.meta.env.DEV) console.error('[iLoveAudio] Processing error:', err)
       setError(message)
       setStatus('error')
     }

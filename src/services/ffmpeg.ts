@@ -16,18 +16,19 @@ export async function loadFFmpeg(): Promise<FFmpeg> {
   if (ffmpegInstance) return ffmpegInstance
   if (loadPromise) return loadPromise
 
+  const isDev = import.meta.env.DEV
   loadPromise = (async () => {
     const ffmpeg = new FFmpeg()
-    ffmpeg.on('log', ({ message }) => console.log('[FFmpeg]', message))
+    if (isDev) ffmpeg.on('log', ({ message }) => console.log('[FFmpeg]', message))
     try {
-      console.log('[FFmpeg] Loading (~25MB, first time only)...')
+      if (isDev) console.log('[FFmpeg] Loading (~25MB, first time only)...')
       await ffmpeg.load({
         coreURL: await toBlobURL(`${BASE_URL}/ffmpeg-core.js`, 'text/javascript'),
         wasmURL: await toBlobURL(`${BASE_URL}/ffmpeg-core.wasm`, 'application/wasm'),
       })
-      console.log('[FFmpeg] Loaded successfully')
+      if (isDev) console.log('[FFmpeg] Loaded successfully')
     } catch (err) {
-      console.error('[FFmpeg] Load failed:', err)
+      if (isDev) console.error('[FFmpeg] Load failed:', err)
       loadPromise = null
       throw err
     }
